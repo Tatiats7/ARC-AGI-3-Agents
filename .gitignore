@@ -21,3 +21,6 @@ tests/recordings/not-a-recording.txt
 memory.db
 
 environment_files/
+
+# Local scorecards
+scorecards/

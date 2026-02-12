@@ -104,7 +104,8 @@ class Swarm:
         if scorecard:
             logger.info("--- FINAL SCORECARD REPORT ---")
             logger.info(json.dumps(scorecard.model_dump(), indent=2))
-
+            if self._arc.operation_mode != OperationMode.ONLINE:
+                json.dump(scorecard.model_dump(), open(f"scorecards/{card_id}.json", "w"))
         # Provide web link to scorecard
         if card_id:
             if self._arc.operation_mode == OperationMode.ONLINE:
