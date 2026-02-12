@@ -383,7 +383,7 @@ Hint:
             else action_response.reason,
             "action_chosen": action.name,
             "game_context": {
-                "score": latest_frame.score,
+                "score": latest_frame.levels_completed,
                 "state": latest_frame.state.name,
                 "action_counter": self.action_counter,
                 "frame_count": len(frames),

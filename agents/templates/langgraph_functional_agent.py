@@ -207,7 +207,7 @@ def format_frame(latest_frame: FrameData, as_image: bool) -> list[dict[str, Any]
 {latest_frame.state.name}
 
 # Score:
-{latest_frame.score}
+{latest_frame.levels_completed}
 
 # Frame:
 """,

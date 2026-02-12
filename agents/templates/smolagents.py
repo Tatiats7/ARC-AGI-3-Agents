@@ -213,7 +213,7 @@ First explore the game by taking actions and then determine the best strategy to
 Use the available tools to take actions in the game. The game is already reset, so you can start taking other actions.
         """.format(
                 state=latest_frame.state.name,
-                score=latest_frame.score,
+                score=latest_frame.levels_completed,
                 frame=self.pretty_print_3d(latest_frame.frame),
             )
         )
@@ -234,7 +234,7 @@ Use the available tools to take actions in the game. The game is already reset, 
 {frame}
         """.format(
                 state=latest_frame.state.name,
-                score=latest_frame.score,
+                score=latest_frame.levels_completed,
                 action_count=len(self.frames),
                 frame=self.pretty_print_3d(latest_frame.frame),
             )
@@ -471,6 +471,6 @@ You can see the game state in the image. Analyze the image and the game state, t
 Call exactly one action.
         """.format(
                 state=latest_frame.state.name,
-                score=latest_frame.score,
+                score=latest_frame.levels_completed,
             )
         )
