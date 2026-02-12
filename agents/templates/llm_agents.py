@@ -396,8 +396,8 @@ Call exactly one action.
                         self.frames[-1]
                     ),
                 }
-                if "langgraph_meta" in kwargs:
-                    meta["langgraph_meta"] = kwargs["langgraph_meta"]
+                if "research_meta" in kwargs:
+                    meta["research_meta"] = kwargs["research_meta"]
                 self.recorder.record(meta)
         super().cleanup(*args, **kwargs)
 
