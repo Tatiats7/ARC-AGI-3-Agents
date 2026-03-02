@@ -96,7 +96,8 @@ class ResearchBaseline(LLM, Agent):
         tool_calls = msg.tool_calls
         reasoning = msg.additional_kwargs.get("reasoning", {}).get("summary", [])
         try:
-            self.thread_messages.append(AIMessage(content=f"(Reasoning summary)\n{reasoning}"))
+            if len(reasoning):
+                self.thread_messages.append(AIMessage(content=f"(Reasoning summary)\n{reasoning}"))
             self.thread_messages.append(msg)
             print("this is msg tokens", msg.usage_metadata)
             func = tool_calls[0]
