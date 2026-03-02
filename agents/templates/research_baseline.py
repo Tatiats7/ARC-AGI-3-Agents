@@ -174,27 +174,10 @@ Reply with a few sentences of plain-text strategy observation about the frame to
     ]
     return prev_tool_result, frame_and_next_action
 
-###TODO:Note 1. colors are different, my assumption is that red color makes it think it is hazard
 
 def g2im(g: list[list[list[int]]]) -> bytes:
-    C = [
-        (0, 0, 0),
-        (0, 0, 170),
-        (0, 170, 0),
-        (0, 170, 170),
-        (170, 0, 0),
-        (170, 0, 170),
-        (170, 85, 0),
-        (170, 170, 170),
-        (85, 85, 85),
-        (85, 85, 255),
-        (85, 255, 85),
-        (85, 255, 255),
-        (255, 85, 85),
-        (255, 85, 255),
-        (255, 255, 85),
-        (255, 255, 255),
-    ]
+    from arc_agi.rendering import COLOR_MAP, hex_to_rgb
+    C = [hex_to_rgb(COLOR_MAP[i]) for i in range(16)]
 
     h, w = len(g[0]), len(g[0][0])
     good = [block for block in g if len(block) == h and len(block[0]) == w]
