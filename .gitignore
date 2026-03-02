@@ -24,3 +24,4 @@ environment_files/
 
 # Local scorecards
 scorecards/
+delete.py
