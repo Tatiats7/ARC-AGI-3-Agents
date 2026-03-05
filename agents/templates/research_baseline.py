@@ -13,6 +13,7 @@ load_dotenv()
 import langsmith as ls
 import PIL
 from arcengine import FrameData, GameAction
+from arcengine.enums import GameState
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI, OpenAI
 from langchain_anthropic import ChatAnthropic
@@ -33,8 +34,9 @@ MESSAGES = TypeVar("MESSAGES", bound=list[dict[str, Any] | ChatCompletionMessage
 
 ###TODO: better system prompt
 SYS_PROMPT = """# CONTEXT:
-You are an agent playing a dynamic ARC-AGI game. Your objective is to
-WIN and avoid GAME_OVER while minimizing actions.
+You are an agent solving ARC-AGI puzzles.
+Your goal: reach WIN state on each level, avoid GAME_OVER.
+Each action should be deliberate - you have limited moves.
 
 # TURN:
 Call exactly one action.
@@ -56,9 +58,11 @@ class ResearchBaseline(LLM, Agent):
         self._thread_id = uuid.uuid5(uuid.NAMESPACE_DNS, self.game_id)
         self.available_actions = self.arc_env.action_space
         self.current_games_actions = [action.name for action in self.arc_env.action_space]
+        ###TODO: add planning/thinking/analyzing steps
         tools = self.build_tools()
         self.llm = self._build_llm(tools)
         self.previous_tool_id = None # NOTE, we're doing this because we haven't have any parallel tool calls.
+        self.previous_levels_completed = 0
         ###TODO: better context management to be done
         self.thread_messages = [SystemMessage(SYS_PROMPT)]
 
@@ -86,8 +90,8 @@ class ResearchBaseline(LLM, Agent):
     def choose_action(
         self, frames: list[FrameData], latest_frame: FrameData
     ) -> GameAction:
-        ###TODO: no game_over and reset handling. 
-        prev_tool_result, frame_and_next_action = format_frame(latest_frame, as_image=True)
+        prev_tool_result, frame_and_next_action = format_frame(latest_frame,  self.previous_levels_completed, as_image=True)
+        self.previous_levels_completed = latest_frame.levels_completed
         if len(self.thread_messages) >= 2:
             # print(self.thread_messages)
             self.thread_messages.append(ToolMessage(content=prev_tool_result, tool_call_id=self.previous_tool_id))
@@ -103,7 +107,7 @@ class ResearchBaseline(LLM, Agent):
             func = tool_calls[0]
             self.previous_tool_id = func["id"]
             action = GameAction.from_name(func["name"])
-            args = json.loads(func["args"]) if func["args"] else {}
+            args = func["args"] if func["args"] else {}
         except Exception as e:
             logger.exception(f"Tool calling still failed: {e}")
             raise e
@@ -136,11 +140,11 @@ class ResearchBaseline(LLM, Agent):
             })
 
     def build_func_resp_prompt(self, latest_frame: FrameData) -> str:
-        ###TODO: implement
+        """This function is just here to prevent incorrect logging"""
         return """No func resp for now"""
 
     def build_user_prompt(self, latest_frame: FrameData) -> str:
-        ###TODO: implement
+        """This function is just here to prevent incorrect logging"""
         return """No user prompt for now"""
     
     def build_tools(self) -> list[dict[str, Any]]:
@@ -149,8 +153,13 @@ class ResearchBaseline(LLM, Agent):
         return tools
 
 # uv run main.py --agent=researchbaseline --game=ls20
-def format_frame(latest_frame: FrameData, as_image: bool) -> list[dict[str, Any]]: 
+def format_frame(latest_frame: FrameData, previous_levels_completed: int, as_image: bool) -> list[dict[str, Any]]: 
     img = g2im(latest_frame.frame) if latest_frame.frame else None
+
+    ###TODO: add one level completion celebration.
+    # if previous_levels_completed < latest_frame.levels_completed:
+    #     text_to_append = "Congrats! you just won one level. do continue on the next"
+
     frame_block = {
         "type": "image_url",
         "image_url": {"url": f"data:image/png;base64,{base64.b64encode(img).decode('ascii')}"},

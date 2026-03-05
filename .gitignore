@@ -25,3 +25,5 @@ environment_files/
 # Local scorecards
 scorecards/
 delete.py
+images_to_delete/
+recordings/aba.json
