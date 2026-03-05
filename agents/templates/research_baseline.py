@@ -92,17 +92,22 @@ class ResearchBaseline(LLM, Agent):
     ) -> GameAction:
         prev_tool_result, frame_and_next_action = format_frame(latest_frame,  self.previous_levels_completed, as_image=True)
         self.previous_levels_completed = latest_frame.levels_completed
-        if len(self.thread_messages) >= 2:
-            # print(self.thread_messages)
-            self.thread_messages.append(ToolMessage(content=prev_tool_result, tool_call_id=self.previous_tool_id))
-        messages = self.thread_messages + [HumanMessage(content=frame_and_next_action)]
+        ### commenting this for the most naive approach to only see system prompt and current situation in memory
+        # if len(self.thread_messages) >= 2:
+        #     self.thread_messages.append(ToolMessage(content=prev_tool_result, tool_call_id=self.previous_tool_id))
+        # messages = self.thread_messages + [HumanMessage(content=frame_and_next_action)]
+        
+        human_content = prev_tool_result+frame_and_next_action
+        messages = self.thread_messages + [HumanMessage(content=human_content)]
+
         msg = self.llm.invoke(messages)
         tool_calls = msg.tool_calls
         reasoning = msg.additional_kwargs.get("reasoning", {}).get("summary", [])
         try:
-            if len(reasoning):
-                self.thread_messages.append(AIMessage(content=f"(Reasoning summary)\n{reasoning}"))
-            self.thread_messages.append(msg)
+            ### commenting this for the most naive approach to only see system prompt and current situation in memory
+            # if len(reasoning):
+            #     self.thread_messages.append(AIMessage(content=f"(Reasoning summary)\n{reasoning}"))
+            # self.thread_messages.append(msg)
             print("this is msg tokens", msg.usage_metadata)
             func = tool_calls[0]
             self.previous_tool_id = func["id"]
@@ -136,6 +141,7 @@ class ResearchBaseline(LLM, Agent):
             self.recorder.record({
                 "reasoning": msg.additional_kwargs.get("reasoning", {}),
                 "tool_calls": msg.tool_calls[0],
+                "model_name": self.MODEL,
                 # "action_counter": self.action_counter,
             })
 
@@ -159,7 +165,8 @@ def format_frame(latest_frame: FrameData, previous_levels_completed: int, as_ima
     ###TODO: add one level completion celebration.
     # if previous_levels_completed < latest_frame.levels_completed:
     #     text_to_append = "Congrats! you just won one level. do continue on the next"
-
+    if img is None:
+        raise ValueError("No image for the frame")
     frame_block = {
         "type": "image_url",
         "image_url": {"url": f"data:image/png;base64,{base64.b64encode(img).decode('ascii')}"},
@@ -179,7 +186,7 @@ def format_frame(latest_frame: FrameData, previous_levels_completed: int, as_ima
             "type": "text",
             "text": """
 # TURN:
-Reply with a few sentences of plain-text strategy observation about the frame to inform your next action.""",
+Reply with a few sentences of plain-text strategy observation about the frame to inform your next action and desired action as tool call""",
         },
     ]
     return prev_tool_result, frame_and_next_action
