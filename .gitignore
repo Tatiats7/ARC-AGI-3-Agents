@@ -27,3 +27,4 @@ scorecards/
 delete.py
 images_to_delete/
 recordings/aba.json
+recordings/old/*
